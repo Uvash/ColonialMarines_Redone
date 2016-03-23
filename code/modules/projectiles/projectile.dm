@@ -55,7 +55,7 @@
 
 	var/datum/plot_vector/trajectory	// used to plot the path of the projectile
 	var/datum/vector_loc/location		// current location of the projectile in pixel space
-	var/matrix/effect_transform			// matrix to rotate and scale projectile effects - putting it here so it doesn't 
+	var/matrix/effect_transform			// matrix to rotate and scale projectile effects - putting it here so it doesn't
 										//  have to be recreated multiple times
 
 /obj/item/projectile/New()
@@ -226,7 +226,7 @@
 	// plot the initial trajectory
 	trajectory = new()
 	trajectory.setup(starting, original, pixel_x, pixel_y, angle_offset=offset)
-	
+
 	// generate this now since all visual effects the projectile makes can use it
 	effect_transform = new()
 	effect_transform.Scale(trajectory.return_hypotenuse(), 1)
@@ -237,7 +237,7 @@
 /obj/item/projectile/proc/muzzle_effect(var/matrix/T)
 //	if(silenced)
 //		return
- 
+
 	if(ispath(muzzle_type))
 		var/obj/effect/projectile/M = new muzzle_type(get_turf(src))
 
@@ -274,3 +274,12 @@
 	..()
 	if(isliving(AM) && AM.density && !checkpass(PASSMOB))
 		Bump(AM, 1)
+
+/obj/item/projectile/proc/Damage_mod(var/damage_mod)//For modification weapons
+	damage = damage * damage_mod
+
+/obj/item/projectile/proc/Dispersion_mod(var/dispersion_mod)
+	dispersion = dispersion * dispersion_mod
+
+/obj/item/projectile/proc/Penetration_mod(var/penetration_mod)
+	penetration = penetration + penetration_mod

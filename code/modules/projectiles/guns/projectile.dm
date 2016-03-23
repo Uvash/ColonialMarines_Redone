@@ -6,6 +6,10 @@
 	w_class = 3.0
 	materials = list(MAT_METAL=1000)
 
+	var/bullet_damage = 1				//damage coefficient
+	var/bullet_dispersion = 1			//dispersion coefficient
+	var/bullet_penetration = 1			//penetration coefficient
+
 	var/mag_type = /obj/item/ammo_box/magazine/m10mm //Removes the need for max_ammo and caliber info
 	var/obj/item/ammo_box/magazine/magazine
 
@@ -177,6 +181,73 @@
 	if (magazine)
 		boolets += magazine.ammo_count()
 	return boolets
+
+/obj/item/weapon/gun/projectile/process_fire(atom/target as mob|obj|turf, mob/living/user as mob|obj, message = 1, params)
+	add_fingerprint(user)
+
+	if(semicd)
+		return
+
+	if(heavy_weapon)
+		if(user.get_inactive_hand())
+			recoil = 4 //one-handed kick
+		else
+			recoil = initial(recoil)
+
+	if(burst_size > 1)
+		for(var/i = 1 to burst_size)
+			if(!issilicon(user))
+				if( i>1 && !(src in get_both_hands(user))) //for burst firing
+					break
+			if(chambered)
+				if(chambered.BB)
+					chambered.Damage_mod(bullet_damage)
+					chambered.Dispersion_mod(bullet_dispersion)
+					chambered.Penetration_mod(bullet_penetration)
+				if(!chambered.fire(target, user, params, , suppressed))
+					shoot_with_empty_chamber(user)
+					break
+				else
+					if(get_dist(user, target) <= 1) //Making sure whether the target is in vicinity for the pointblank shot
+						shoot_live_shot(user, 1, target, message)
+					else
+						shoot_live_shot(user, 0, target, message)
+					score_rounds_fired++
+			else
+				shoot_with_empty_chamber(user)
+				break
+			process_chamber()
+			update_icon()
+			sleep(fire_delay)
+	else
+		if(chambered)
+			if(chambered.BB)
+				chambered.Damage_mod(bullet_damage)
+				chambered.Dispersion_mod(bullet_dispersion)
+				chambered.Penetration_mod(bullet_penetration)
+			if(!chambered.fire(target, user, params, , suppressed))
+				shoot_with_empty_chamber(user)
+				return
+			else
+				if(get_dist(user, target) <= 1) //Making sure whether the target is in vicinity for the pointblank shot
+					shoot_live_shot(user, 1, target, message)
+				else
+					shoot_live_shot(user, 0, target, message)
+				score_rounds_fired++
+		else
+			shoot_with_empty_chamber(user)
+			return
+		process_chamber()
+		update_icon()
+		semicd = 1
+		spawn(fire_delay)
+			semicd = 0
+
+	if(user.hand)
+		user.update_inv_l_hand()
+	else
+		user.update_inv_r_hand()
+	feedback_add_details("gun_fired","[src.type]")
 
 /obj/item/weapon/gun/projectile/suicide_act(mob/user)
 	if (src.chambered && src.chambered.BB && !src.chambered.BB.nodamage)

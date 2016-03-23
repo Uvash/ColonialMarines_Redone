@@ -14,6 +14,9 @@
 	var/pellets = 0								//Pellets for spreadshot
 	var/variance = 0							//Variance for inaccuracy fundamental to the casing
 	var/delay = 0								//Delay for energy weapons
+	var/damage_coefficient = 1					//It`s multiplier
+	var/dispersion_coefficient = 1
+	var/penetration_coefficient = 0				// because it summand
 
 /obj/item/ammo_casing/New()
 	..()
@@ -32,6 +35,9 @@
 /obj/item/ammo_casing/proc/newshot() //For energy weapons, shotgun shells and wands (!).
 	if (!BB)
 		BB = new projectile_type(src)
+		BB.Damage_mod(damage_coefficient)
+		BB.Dispersion_mod(dispersion_coefficient)
+		BB.Penetration_mod(penetration_coefficient)
 	return
 
 /obj/item/ammo_casing/attackby(obj/item/ammo_box/box, mob/user, params)
@@ -53,6 +59,23 @@
 		else
 			user << "<span class='warning'>You fail to collect anything!</span>"
 
+/obj/item/ammo_casing/proc/Damage_mod(damage_coef)
+	damage_coefficient = damage_coef
+	if(!BB)
+		return
+	BB.Damage_mod(damage_coefficient)
+
+/obj/item/ammo_casing/proc/Dispersion_mod(dispersion_coef)
+	dispersion_coefficient = dispersion_coef
+	if(!BB)
+		return
+	BB.Dispersion_mod(dispersion_coefficient)
+
+/obj/item/ammo_casing/proc/Penetration_mod(penetration_coef)
+	penetration_coefficient = penetration_coef
+	if(!BB)
+		return
+	BB.Penetration_mod(penetration_coefficient)
 //Boxes of ammo
 /obj/item/ammo_box
 	name = "ammo box (null_reference_exception)"
@@ -158,3 +181,5 @@
 //Behavior for magazines
 /obj/item/ammo_box/magazine/proc/ammo_count()
 	return stored_ammo.len
+
+
