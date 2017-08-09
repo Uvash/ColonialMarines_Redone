@@ -3,5 +3,9 @@
 	build_type = MARINEFAB
 	part_sets = list(
 						"Main weapon",
-						"Secondary weapon"
+						"Secondary weapon",
+						"Ammo",
+						"Armor",
+						"Miss",
+						"Explosives"
 						)
